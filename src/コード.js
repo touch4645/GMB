@@ -207,7 +207,7 @@ async function getAttributes(location) {
     const endpoint = `https://mybusinessbusinessinformation.googleapis.com/v1/${location.name}/attributes`;
     let result;
 
-    await request(endpoint, 'GET', payload).then(response => {
+    await request(endpoint, 'GET').then(response => {
         result = response;
     });
     await Utilities.sleep(1000);
@@ -222,10 +222,12 @@ async function getAttributes(location) {
  * @returns {Object} 取得したGoogleからの更新オブジェクト
  */
 async function getGoogleUpdated(location) {
-    const endpoint = `https://mybusinessbusinessinformation.googleapis.com/v1/${location.name}:getGoogleUpdated`;
+    const endpoint = `https://mybusinessbusinessinformation.googleapis.com/v1/${location.name}:getGoogleUpdated`
+    + '?readMask=name,title,phoneNumbers,categories,storefrontAddress,websiteUri,regularHours,specialHours,serviceArea,latlng,openInfo,metadata,profile,relationshipData,moreHours,serviceItems';
+    
     let result;
 
-    await request(endpoint, 'GET', payload).then(response => {
+    await request(endpoint, 'GET').then(response => {
         result = response;
     });
     await Utilities.sleep(1000);
@@ -234,3 +236,27 @@ async function getGoogleUpdated(location) {
 }
 
 
+/**
+ * ロケーションに紐づくリンクを取得する関数
+ * @param {Object} location Google My Businessのロケーションオブジェクト
+ * @returns {Array<Object>} 取得したリンクが格納された配列
+ */
+async function getPlaceActionLink(location) {
+    const baseUri = `https://mybusinessplaceactions.googleapis.com/v1/${location.name}/placeActionLinks`;
+    let result = [];
+    let pageToken;
+
+    do {
+        let endpoint = baseUri;
+        if (pageToken) {       
+            endpoint += `?pageToken=${pageToken}`;
+        }
+        await request(endpoint, 'GET').then(response => {
+            result = result.concat(response.placeActionLinks);
+            pageToken = response.nextPageToken;
+        });
+        await Utilities.sleep(1000);
+    } while (pageToken);
+
+    return result;
+}
