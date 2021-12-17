@@ -89,7 +89,7 @@ async function getLocations(account) {
  * ※現在使用不可
  * @returns {Array<Object>} カテゴリオブジェクトの配列
  */
-async function getAllCategories() {
+async function searchAllCategories() {
     const baseUri = `https://mybusinessbusinessinformation.googleapis.com/v1/categories?regionCode=JP&languageCode=ja&view=FULL`;
     let result = [];
     let pageToken;
@@ -114,7 +114,7 @@ async function getAllCategories() {
  * 日本で利用可能な属性一覧を取得する関数
  * @returns {Array<Object>} 属性オブジェクトの配列
  */
-async function getAllAttributes() {
+async function searchAllAttributes() {
     const baseUri = `https://mybusinessbusinessinformation.googleapis.com/v1/attributes?regionCode=JP&languageCode=ja&showAll=true`;
     let result = [];
     let pageToken;
@@ -160,6 +160,7 @@ async function searchLocations(query) {
 
 /**
  * 最大10個のロケーションからインサイトを取得する関数
+ * ※廃止予定のGoogle My Business API v4.9を使用
  * @param {Object} account Google My Businessのアカウントオブジェクト
  * @param {Array<Object>} locations Google My Businessのロケーションオブジェクトが格納された配列
  * ※最大10個まで格納可能
@@ -253,6 +254,80 @@ async function getPlaceActionLink(location) {
         }
         await request(endpoint, 'GET').then(response => {
             result = result.concat(response.placeActionLinks);
+            pageToken = response.nextPageToken;
+        });
+        await Utilities.sleep(1000);
+    } while (pageToken);
+
+    return result;
+}
+
+
+/**
+ * クエリに該当するチェーン店舗を検索する関数
+ * @param {String} query 検索クエリ
+ * @returns {Object} 検索結果のチェーンオブジェクト
+ */
+async function searchChains(query) {
+    const endpoint = `https://mybusinessbusinessinformation.googleapis.com/v1/chains:search?chainName=${query}&pageSize=500`;
+    let result;
+
+    await request(endpoint, 'GET').then(response => {
+        result = response;
+    });
+    await Utilities.sleep(1000);
+
+    return result;
+}
+
+
+/**
+ * ロケーションに紐づく投稿を取得する関数
+ * ※廃止予定のGoogle My Business API v4.9を使用
+ * @param {Object} account Google My Businessのアカウントオブジェクト
+ * @param {Object} location Google My Businessのロケーションオブジェクト
+ * @returns {Array<Object>} 取得した投稿が格納された配列
+ */
+async function getLocalPosts(account, location) {
+    const baseUri = `https://mybusiness.googleapis.com/v4/${account.name}/${location.name}/localPosts?pageSize=100`;
+    let result = [];
+    let pageToken;
+
+    do {
+        let endpoint = baseUri;
+        if (pageToken) {       
+            endpoint += `&pageToken=${pageToken}`;
+        }
+        await request(endpoint, 'GET').then(response => {
+            result = result.concat(response.localPosts);
+            pageToken = response.nextPageToken;
+        });
+        await Utilities.sleep(1000);
+    } while (pageToken);
+
+    return result;
+}
+
+
+/**
+ * ロケーションに紐づく口コミを取得する関数
+ * ※廃止予定のGoogle My Business API v4.9を使用
+ * @param {Object} account Google My Businessのアカウントオブジェクト
+ * @param {Object} location Google My Businessのロケーションオブジェクト
+ * @returns {Array<Object>} 取得した口コミが格納された配列
+ */
+async function getReviews(account, location) {
+    const baseUri = `https://mybusiness.googleapis.com/v4/${account.name}/${location.name}/reviews?pageSize=50`;
+    let result = [];
+    let pageToken;
+
+    do {
+        let endpoint = baseUri;
+        if (pageToken) {       
+            endpoint += `&pageToken=${pageToken}`;
+        }
+        await request(endpoint, 'GET').then(response => {
+            result = result.concat(response.reviews);
             pageToken = response.nextPageToken;
         });
         await Utilities.sleep(1000);
