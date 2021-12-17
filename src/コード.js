@@ -89,7 +89,7 @@ async function getLocations(account) {
  * ※現在使用不可
  * @returns {Array<Object>} カテゴリオブジェクトの配列
  */
-async function getCategories() {
+async function getAllCategories() {
     const baseUri = `https://mybusinessbusinessinformation.googleapis.com/v1/categories?regionCode=JP&languageCode=ja&view=FULL`;
     let result = [];
     let pageToken;
@@ -114,7 +114,7 @@ async function getCategories() {
  * 日本で利用可能な属性一覧を取得する関数
  * @returns {Array<Object>} 属性オブジェクトの配列
  */
-async function getAttributes() {
+async function getAllAttributes() {
     const baseUri = `https://mybusinessbusinessinformation.googleapis.com/v1/attributes?regionCode=JP&languageCode=ja&showAll=true`;
     let result = [];
     let pageToken;
@@ -195,4 +195,42 @@ async function getInsights(account, locations, startTime, endTime) {
     await Utilities.sleep(1000);
 
     return result;
-  }
+}
+
+
+/**
+ * ロケーションに紐づく属性を取得する関数
+ * @param {Object} location Google My Businessのロケーションオブジェクト
+ * @returns {Object} 取得した属性オブジェクト
+ */
+async function getAttributes(location) {
+    const endpoint = `https://mybusinessbusinessinformation.googleapis.com/v1/${location.name}/attributes`;
+    let result;
+
+    await request(endpoint, 'GET', payload).then(response => {
+        result = response;
+    });
+    await Utilities.sleep(1000);
+
+    return result;
+}
+
+
+/**
+ * ロケーションに紐づくGoogleからの更新を取得する関数
+ * @param {Object} location Google My Businessのロケーションオブジェクト
+ * @returns {Object} 取得したGoogleからの更新オブジェクト
+ */
+async function getGoogleUpdated(location) {
+    const endpoint = `https://mybusinessbusinessinformation.googleapis.com/v1/${location.name}:getGoogleUpdated`;
+    let result;
+
+    await request(endpoint, 'GET', payload).then(response => {
+        result = response;
+    });
+    await Utilities.sleep(1000);
+
+    return result;
+}
+
+
