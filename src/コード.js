@@ -21,10 +21,9 @@ async function request(endPoint, method='GET', payload='') {
   
     const response = await UrlFetchApp.fetch(endPoint, param);
     if (response.getResponseCode() === 200) {
-        console.log(response);
         return JSON.parse( response.getContentText() );
     } else {
-        throw new Error('This Request was not successful')
+        throw new Error(JSON.stringify({code: response.getResponseCode(), content: response.getContentText(), message: 'This Request was not successful'}))
     }
 }
 
@@ -88,7 +87,7 @@ async function getLocations(account) {
 /**
  * 日本で利用可能なカテゴリ一覧を取得する関数
  * ※現在使用不可
- * @returns {Object} カテゴリオブジェクト
+ * @returns {Array<Object>} カテゴリオブジェクトの配列
  */
 async function getCategories() {
     const baseUri = `https://mybusinessbusinessinformation.googleapis.com/v1/categories?regionCode=JP&languageCode=ja&view=FULL`;
@@ -101,7 +100,32 @@ async function getCategories() {
             endpoint += `?pageToken=${pageToken}`;
         }
         await request(endpoint, 'GET').then(response => {
-            result = result.concat(response.locations);
+            result = result.concat(response.categories);
+            pageToken = response.nextPageToken;
+        });
+        await Utilities.sleep(1000);
+    } while (pageToken);
+
+    return result;
+}
+
+
+/**
+ * 日本で利用可能な属性一覧を取得する関数
+ * @returns {Array<Object>} 属性オブジェクトの配列
+ */
+async function getAttributes() {
+    const baseUri = `https://mybusinessbusinessinformation.googleapis.com/v1/attributes?regionCode=JP&languageCode=ja&showAll=true`;
+    let result = [];
+    let pageToken;
+
+    do {
+        let endpoint = baseUri;
+        if (pageToken) {       
+            endpoint += `?pageToken=${pageToken}`;
+        }
+        await request(endpoint, 'GET').then(response => {
+            result = result.concat(response.attributeMetadata);
             pageToken = response.nextPageToken;
         });
         await Utilities.sleep(1000);
@@ -126,7 +150,7 @@ async function searchLocations(query) {
     }
 
     await request(endpoint, 'POST', payload).then(response => {
-        result = response.locations;
+        result = response;
     });
     await Utilities.sleep(1000);
 
@@ -134,13 +158,22 @@ async function searchLocations(query) {
 }
 
 
-
+/**
+ * 最大10個のロケーションからインサイトを取得する関数
+ * @param {Object} account Google My Businessのアカウントオブジェクト
+ * @param {Array<Object>} locations Google My Businessのロケーションオブジェクトが格納された配列
+ * ※最大10個まで格納可能
+ * @param {String} startTime インサイトの取得開始時間
+ * @param {String} endTime インサイトの取得終了時間
+ * @returns {Object} 取得されたインサイトデータオブジェクト
+ */
 async function getInsights(account, locations, startTime, endTime) {
-    const endpoint = `https://mybusiness.googleapis.com/v4/accounts/${account.name}/locations:reportInsights`;
+    const endpoint = `https://mybusiness.googleapis.com/v4/${account.name}/locations:reportInsights`;
+    let result;
     
     const payload = {
         // payloadで利用するためlocationオブジェクトからname属性を取り出した新しい配列を作成
-        'locationNames' : locations.map(location => location.name), 
+        'locationNames' : locations.map(location => `${account.name}/${location.name}`), 
         'basicRequest' : {
             'metricRequests': [{
                 'metric' : 'ALL',
@@ -157,7 +190,7 @@ async function getInsights(account, locations, startTime, endTime) {
     };
     
     await request(endpoint, 'POST', payload).then(response => {
-        result = response.locations;
+        result = response;
     });
     await Utilities.sleep(1000);
 
