@@ -3,9 +3,10 @@
   "dependencies": {
   },
   "exceptionLogging": "STACKDRIVER",
-  "oauthScopes": ["https://www.googleapis.com/auth/script.external_request",
-                  "https://www.googleapis.com/auth/business.manage",
-                  "https://www.googleapis.com/auth/plus.business.manage"
-                ],
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/script.external_request",
+    "https://www.googleapis.com/auth/business.manage",
+    "https://www.googleapis.com/auth/plus.business.manage"
+  ],
   "runtimeVersion": "V8"
 }

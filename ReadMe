@@ -1,0 +1,4 @@
+# Google My Business API の利用方法
+
+* Google Cloud PlatformにてGoogle My Business APIを有効化したプロジェクトを作成
+* Google Apps Scriptにて先に作成したプロジェクト番号を入力し、プロジェクトを設定

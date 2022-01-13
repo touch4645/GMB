@@ -1,0 +1,25 @@
+{
+  "name": "gas-gmb",
+  "version": "1.0.0",
+  "description": "* Google Cloud PlatformにてGoogle My Business APIを有効化したプロジェクトを作成 * Google Apps Scriptにて先に作成したプロジェクト番号を入力し、プロジェクトを設定",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/touch4645/GMB.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/touch4645/GMB/issues"
+  },
+  "homepage": "https://github.com/touch4645/GMB#readme",
+  "devDependencies": {
+    "jest": "^27.4.5"
+  }
+}
